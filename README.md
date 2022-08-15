@@ -1,4 +1,4 @@
-# RENDERER for Electron: System Info (NOT YET TESTED)
+# RENDERER for Electron: System Info
 
 Allow the renderer to get information about the version of Electron, Chrome and NodeJS
 
@@ -11,6 +11,12 @@ Use [@el3um4s/ipc-for-electron](https://www.npmjs.com/package/@el3um4s/ipc-for-e
 To use the package in a project:
 
 ```bash
+npm i @el3um4s/renderer-for-electron-system-info
+```
+
+Or with Electron:
+
+```bash
 npm i @el3um4s/renderer-for-electron-system-info @el3um4s/ipc-for-electron-system-info @el3um4s/ipc-for-electron
 ```
 
@@ -18,14 +24,14 @@ Then the `preload.ts` file:
 
 ```ts
 import { generateContextBridge } from "@el3um4s/ipc-for-electron";
-import { systemInfo } from "@el3um4s/ipc-for-electron-system-info";
+import systemInfo from "@el3um4s/ipc-for-electron-system-info";
 
 const listAPI = [systemInfo];
 
 generateContextBridge(listAPI);
 ```
 
-From the renderer file:
+In the renderer file:
 
 ```ts
 import systemInfo from "@el3um4s/renderer-for-electron-system-info";
@@ -52,7 +58,7 @@ systemInfo.requestSystemInfo({
 });
 ```
 
-From the renderer you can use:
+In the renderer you can use:
 
 ```ts
 let isWindows = false;
@@ -88,7 +94,7 @@ globalThis.api.systemInfo.receive("getSystemInfo", (data) => {
 example:
 
 ```ts
-import systemInfo from "@el3um4s/ipc-for-electron-system-info";
+import systemInfo from "@el3um4s/renderer-for-electron-system-info";
 
 let app: string = "-";
 let chrome: string = "-";
@@ -112,7 +118,7 @@ systemInfo.requestSystemInfo({
 example:
 
 ```ts
-import systemInfo from "@el3um4s/ipc-for-electron-system-info";
+import systemInfo from "@el3um4s/renderer-for-electron-system-info";
 
 let isWindows = false;
 
@@ -132,7 +138,7 @@ systemInfo.requestIsWindows({
 example:
 
 ```ts
-import systemInfo from "@el3um4s/ipc-for-electron-system-info";
+import systemInfo from "@el3um4s/renderer-for-electron-system-info";
 
 let app: string = "-";
 let chrome: string = "-";
@@ -157,7 +163,7 @@ systemInfo.on.getSystemInfo({
 example:
 
 ```ts
-import systemInfo from "@el3um4s/ipc-for-electron-system-info";
+import systemInfo from "@el3um4s/renderer-for-electron-system-info";
 
 let isWindows = false;
 
