@@ -1,6 +1,3 @@
-const myCustomFunction = (name: string):string => `Hello ${name}`;
-function ciao(name: string): string {
-    return `Ciao ${name}`;
-}
+import systemInfo from "./IPC/systemInfo";
 
-export { myCustomFunction, ciao};
+export default systemInfo;

@@ -1,106 +1,200 @@
-# Typescript NPM Package Starter
-My template for creating npm packages using typescript.
+# RENDERER for Electron: System Info (NOT YET TESTED)
 
-- TS to JS
-- Testing via Jest, includes coverage
-- ESLint
-- Ignore files to ensure minimal code is stored/shipped
+Allow the renderer to get information about the version of Electron, Chrome and NodeJS
 
-NPM link: [@el3um4s/typescript-npm-package-starter](https://www.npmjs.com/package/@el3um4s/typescript-npm-package-starter)
+NPM link: [@el3um4s/renderer-for-electron-system-info](https://www.npmjs.com/package/@el3um4s/renderer-for-electron-system-info)
 
-### Getting Started
-
-To create a new project based on this template using degit:
-
-```bash
-npx degit el3um4s/typescript-npm-package-starter
-```
-
-Then install the dependencies with
-
-```bash
-npm install
-```
-
-Now update the name field in package.json with your desired package name. Then update the homepage field in package.json. And finally add your code.
-
-### Build the package
-
-Run
-
-```bash
-npm run build
-```
-
-### Test the package
-
-You can test the code with [Jest](https://jestjs.io/)
-
-```bash
-npm test
-```
-
-You can find the test coverage in `coverage/lcov-report/index.html`.
-
-### Check dependencies
-
-You can check and upgrade dependencies to the latest versions, ignoring specified versions. with [npm-check-updates](https://www.npmjs.com/package/npm-check-updates):
-
-```bash
-npm run check-updates
-```
-
-You can also use `npm run check-updates:minor` to update only patch and minor.
-
-Instead `npm run check-updates:patch` only updates patch.
-
-### Publish
-
-First commit the changes to GitHub. Then login to your [NPM](https://www.npmjs.com) account (If you don’t have an account you can do so on [https://www.npmjs.com/signup](https://www.npmjs.com/signup))
-
-```bash
-npm login
-```
-
-Then run publish:
-
-```bash
-npm publish
-```
-
-If you're using a scoped name use:
-
-```bash
-npm publish --access public
-```
-
-### Bumping a new version
-
-To update the package use:
-
-```bash
-npm version patch
-```
-
-and then
-
-```bash
-npm publish
-```
+Use [@el3um4s/ipc-for-electron](https://www.npmjs.com/package/@el3um4s/ipc-for-electron) and [@el3um4s/ipc-for-electron-system-info](https://www.npmjs.com/package/@el3um4s/ipc-for-electron-system-info) to allow communication between Electron and a web page
 
 ### Install and use the package
 
 To use the package in a project:
 
 ```bash
-npm i @el3um4s/typescript-npm-package-starter
+npm i @el3um4s/renderer-for-electron-system-info @el3um4s/ipc-for-electron-system-info @el3um4s/ipc-for-electron
 ```
 
-and then in a file:
+Then the `preload.ts` file:
 
 ```ts
-import { ciao } from "@el3um4s/typescript-npm-package-starter";
+import { generateContextBridge } from "@el3um4s/ipc-for-electron";
+import { systemInfo } from "@el3um4s/ipc-for-electron-system-info";
 
-const b = ciao("mondo");
-console.log(b); // Ciao Mondo
+const listAPI = [systemInfo];
+
+generateContextBridge(listAPI);
+```
+
+From the renderer file:
+
+```ts
+import systemInfo from "@el3um4s/renderer-for-electron-system-info";
+let isWindows = false;
+
+systemInfo.requestIsWindows({
+  callback: (data) => {
+    isWindows = data.isWindows;
+  },
+});
+
+let app: string = "-";
+let chrome: string = "-";
+let node: string = "-";
+let electron: string = "-";
+
+systemInfo.requestSystemInfo({
+  callback: (data) => {
+    chrome = data.chrome;
+    node = data.node;
+    electron = data.electron;
+    app = data.app;
+  },
+});
+```
+
+From the renderer you can use:
+
+```ts
+let isWindows = false;
+
+globalThis.api.systemInfo.send("requestIsWindows", null);
+globalThis.api.systemInfo.receive("getIsWindows", (data) => {
+  isWindows = data.isWindows;
+});
+
+let chrome: string = "-";
+let node: string = "-";
+let electron: string = "-";
+let app: string = "-";
+
+globalThis.api.systemInfo.send("requestSystemInfo", null);
+globalThis.api.systemInfo.receive("getSystemInfo", (data) => {
+  chrome = data.chrome;
+  node = data.node;
+  electron = data.electron;
+  app = data.app;
+});
+```
+
+### API: Electron Side
+
+- `requestSystemInfo` - Request the version of Electron, Chrome and NodeJS. The response is sent to the `getSystemInfo` channel
+- `requestIsWindows` - Request if the OS is Windows. The response is sent to the `getIsWindows` channel
+
+### API: Renderer Side - Request
+
+`requestSystemInfo = async (options: { callback?: (arg0: SystemInfo) => void; apiKey?: string; }): Promise<SystemInfo>`
+
+example:
+
+```ts
+import systemInfo from "@el3um4s/ipc-for-electron-system-info";
+
+let app: string = "-";
+let chrome: string = "-";
+let node: string = "-";
+let electron: string = "-";
+
+systemInfo.requestSystemInfo({
+  apiKey: "ipc",
+  callback: (data) => {
+    console.log("DATA OK", data);
+    chrome = data.chrome;
+    node = data.node;
+    electron = data.electron;
+    app = data.app;
+  },
+});
+```
+
+`requestIsWindows = async (options: { callback?: (arg0: IsWindows) => void; apiKey?: string; }): Promise<IsWindows>`
+
+example:
+
+```ts
+import systemInfo from "@el3um4s/ipc-for-electron-system-info";
+
+let isWindows = false;
+
+systemInfo.requestIsWindows({
+  apiKey: "ipc",
+  callback: (data) => {
+    console.log("DATA OK", data);
+    isWindows = data.isWindows;
+  },
+});
+```
+
+### API: Renderer Side - Response
+
+`on.getSystemInfo = async (options: { callback?: (arg0: SystemInfo) => void; apiKey?: string; }): Promise<SystemInfo>`
+
+example:
+
+```ts
+import systemInfo from "@el3um4s/ipc-for-electron-system-info";
+
+let app: string = "-";
+let chrome: string = "-";
+let node: string = "-";
+let electron: string = "-";
+systemInfo.requestSystemInfo();
+
+systemInfo.on.getSystemInfo({
+  apiKey: "ipc",
+  callback: (data) => {
+    console.log("DATA OK", data);
+    chrome = data.chrome;
+    node = data.node;
+    electron = data.electron;
+    app = data.app;
+  },
+});
+```
+
+`on.getIsWindows = async (options: { callback?: (arg0: IsWindows) => void; apiKey?: string; }): Promise<IsWindows>`
+
+example:
+
+```ts
+import systemInfo from "@el3um4s/ipc-for-electron-system-info";
+
+let isWindows = false;
+
+systemInfo.requestIsWindows();
+
+systemInfo.on.getIsWindows({
+  apiKey: "ipc",
+  callback: (data) => {
+    console.log("DATA OK", data);
+    isWindows = data.isWindows;
+  },
+});
+```
+
+### Types
+
+**SystemInfo**
+
+```ts
+interface SystemInfo {
+  chrome: string;
+  node: string;
+  electron: string;
+  app: string;
+}
+```
+
+**IsWindows**
+
+```ts
+interface IsWindows {
+  isWindows: boolean;
+}
+```
+
+**DefaultApiKey**
+
+```ts
+type DefaultApiKey = "ipc";
 ```
