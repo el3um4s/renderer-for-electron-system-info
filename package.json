@@ -1,6 +1,6 @@
 {
   "name": "@el3um4s/renderer-for-electron-system-info",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Allow the renderer to get information about the version of Electron, Chrome and NodeJS used",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
